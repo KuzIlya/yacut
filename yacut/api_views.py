@@ -11,6 +11,7 @@ from .utils import get_unique_short_id
 
 @app.route("/api/id/", methods=["POST"])
 def create_short_id():
+    global counter
     data = request.get_json(silent=True)
     if not data:
         raise InvalidAPIUsage("Отсутствует тело запроса")
@@ -36,7 +37,7 @@ def create_short_id():
         try:
             data["custom_id"] = get_unique_short_id()
         except UniquenessError:
-            raise InvalidAPIUsage('Ошибка со стороны сервера', 500)
+            raise InvalidAPIUsage("Ошибка со стороны сервера", 500)
 
     url_map = URLMap(original=data["url"], short=data["custom_id"])
     db.session.add(url_map)

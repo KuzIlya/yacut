@@ -9,6 +9,7 @@ from .errors_handlers import UniquenessError
 
 @app.route("/", methods=["GET", "POST"])
 def index_page():
+    global counter
     form = URLForm()
     if form.validate_on_submit():
         original = form.original_link.data

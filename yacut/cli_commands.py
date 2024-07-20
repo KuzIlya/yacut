@@ -1,8 +1,10 @@
 import click
 
+from sqlalchemy import func as sql_func
+
 from . import app, db
 from .models import URLMap
-from .utils import MAX_COMBINES, get_unique_short_id
+from .utils import MAX_COMBINES
 
 
 @app.cli.command("delete_links")
@@ -36,5 +38,9 @@ def delete_link(id):
 @app.cli.command("check_short_counter")
 def check_short_counter_command():
     """Проверить количество доступных имен"""
-    current_combines = get_unique_short_id.counter()
-    click.echo(f"Количество свободных имен: {MAX_COMBINES - current_combines}")
+    words_count = URLMap.query.filter(
+        sql_func.char_length(URLMap.short) == 6
+    ).count()
+    click.echo(
+        f"Количество свободных имен: {MAX_COMBINES - words_count}"
+    )
