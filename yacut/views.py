@@ -1,4 +1,4 @@
-from flask import abort, flash, redirect, render_template, request
+from flask import flash, redirect, render_template, request
 
 from . import app, db
 from .forms import URLForm
@@ -13,7 +13,10 @@ def index_page():
         original = form.original_link.data
         short = form.custom_id.data
         if short and URLMap.query.filter_by(short=short).first():
-            flash("Предложенный вариант короткой ссылки уже существует.", "Warninig")
+            flash(
+                "Предложенный вариант короткой ссылки уже существует.",
+                "Warninig",
+            )
             return render_template("index.html", form=form)
         if not short:
             while True:

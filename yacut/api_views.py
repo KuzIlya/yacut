@@ -1,6 +1,7 @@
 from string import ascii_letters, digits
 
 from flask import jsonify, request
+from validators import url
 
 from . import app, db
 from .errors_handlers import InvalidAPIUsage
@@ -15,16 +16,22 @@ def create_short_id():
         raise InvalidAPIUsage("Отсутствует тело запроса")
     if "url" not in data:
         raise InvalidAPIUsage('"url" является обязательным полем!')
+    if not url(data["url"]):
+        raise InvalidAPIUsage("Длинная ссылка не работает")
     if "custom_id" in data and data["custom_id"]:
         if URLMap.query.filter_by(short=data["custom_id"]).first():
             raise InvalidAPIUsage(
-                "Предложенный вариант короткой " "ссылки уже существует."
+                "Предложенный вариант короткой ссылки уже существует."
             )
         if not (
             1 <= len(data["custom_id"]) <= 16
-            and all(letter in ascii_letters + digits for letter in data["custom_id"])
+            and all(
+                char in ascii_letters + digits for char in data["custom_id"]
+            )
         ):
-            raise InvalidAPIUsage("Указано недопустимое " "имя для короткой ссылки")
+            raise InvalidAPIUsage(
+                "Указано недопустимое имя для короткой ссылки"
+            )
     else:
         while True:
             generated_short = get_unique_short_id()
