@@ -33,11 +33,7 @@ def create_short_id():
                 "Указано недопустимое имя для короткой ссылки"
             )
     else:
-        while True:
-            generated_short = get_unique_short_id()
-            if not URLMap.query.filter_by(short=generated_short).first():
-                data["custom_id"] = generated_short
-                break
+        data["custom_id"] = get_unique_short_id()
 
     url_map = URLMap(original=data["url"], short=data["custom_id"])
     db.session.add(url_map)

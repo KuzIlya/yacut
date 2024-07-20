@@ -15,6 +15,10 @@ class InvalidAPIUsage(Exception):
         return dict(message=self.message)
 
 
+class UniquenessError(Exception):
+    pass
+
+
 @app.errorhandler(InvalidAPIUsage)
 def invalid_api_usage(error):
     return jsonify(error.to_dict()), error.status_code

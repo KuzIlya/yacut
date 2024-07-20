@@ -19,11 +19,8 @@ def index_page():
             )
             return render_template("index.html", form=form)
         if not short:
-            while True:
-                generated_short = get_unique_short_id()
-                if not URLMap.query.filter_by(short=generated_short).first():
-                    short = generated_short
-                    break
+            short = get_unique_short_id()
+
         url_map = URLMap(original=original, short=short)
         db.session.add(url_map)
         db.session.commit()
