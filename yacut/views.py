@@ -1,9 +1,10 @@
-from flask import flash, redirect, render_template, request
+from flask import abort, flash, redirect, render_template, request
 
 from . import app, db
 from .forms import URLForm
 from .models import URLMap
 from .utils import get_unique_short_id
+from .errors_handlers import UniquenessError
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -19,7 +20,10 @@ def index_page():
             )
             return render_template("index.html", form=form)
         if not short:
-            short = get_unique_short_id()
+            try:
+                short = get_unique_short_id()
+            except UniquenessError:
+                abort(500)
 
         url_map = URLMap(original=original, short=short)
         db.session.add(url_map)

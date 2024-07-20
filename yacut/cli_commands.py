@@ -2,6 +2,7 @@ import click
 
 from . import app, db
 from .models import URLMap
+from .utils import MAX_COMBINES, get_unique_short_id
 
 
 @app.cli.command("delete_links")
@@ -30,3 +31,10 @@ def delete_link(id):
         click.echo(f"Объект с {id=} был удален")
     else:
         click.echo(f"Объект с {id=} не существует")
+
+
+@app.cli.command("check_short_counter")
+def check_short_counter_command():
+    """Проверить количество доступных имен"""
+    current_combines = get_unique_short_id.counter()
+    click.echo(f"Количество свободных имен: {MAX_COMBINES - current_combines}")

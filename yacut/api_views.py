@@ -4,7 +4,7 @@ from flask import jsonify, request
 from validators import url
 
 from . import app, db
-from .errors_handlers import InvalidAPIUsage
+from .errors_handlers import InvalidAPIUsage, UniquenessError
 from .models import URLMap
 from .utils import get_unique_short_id
 
@@ -33,7 +33,10 @@ def create_short_id():
                 "Указано недопустимое имя для короткой ссылки"
             )
     else:
-        data["custom_id"] = get_unique_short_id()
+        try:
+            data["custom_id"] = get_unique_short_id()
+        except UniquenessError:
+            raise InvalidAPIUsage('Ошибка со стороны сервера', 500)
 
     url_map = URLMap(original=data["url"], short=data["custom_id"])
     db.session.add(url_map)
