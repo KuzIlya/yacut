@@ -4,11 +4,9 @@ from string import ascii_letters, digits
 
 from sqlalchemy import func as sql_func
 
+from .constants import MAX_COMBINES, SHORT_ID_LENGTH
 from .models import URLMap
 from .errors_handlers import UniquenessError
-
-SHORT_ID_LENGTH = 6
-MAX_COMBINES = (len(ascii_letters) + len(digits)) ** SHORT_ID_LENGTH
 
 
 def counter_of_combines(func):
@@ -20,12 +18,12 @@ def counter_of_combines(func):
         nonlocal generated_ids
         if (
             URLMap.query.filter(
-                sql_func.char_length(URLMap.short) == 6
+                sql_func.char_length(URLMap.short) == SHORT_ID_LENGTH
             ).count()
             == MAX_COMBINES
         ):
             raise UniquenessError(
-                "Были использованны все значения из 6 символов"
+                f"Использованны все значения из {SHORT_ID_LENGTH} символов"
             )
         while True:
             if (result_id := func(*args, **kwargs)) not in generated_ids:
@@ -39,5 +37,4 @@ def counter_of_combines(func):
 def get_unique_short_id() -> str:
     """Функция для генерации случайных строк"""
     characters = ascii_letters + digits
-    random_string = "".join(choice(characters) for _ in range(SHORT_ID_LENGTH))
-    return random_string
+    return "".join(choice(characters) for _ in range(SHORT_ID_LENGTH))

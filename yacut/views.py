@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 from flask import abort, flash, redirect, render_template, request
 
 from . import app, db
@@ -24,7 +26,7 @@ def index_page():
             try:
                 short = get_unique_short_id()
             except UniquenessError:
-                abort(500)
+                abort(HTTPStatus.INTERNAL_SERVER_ERROR)
 
         url_map = URLMap(original=original, short=short)
         db.session.add(url_map)

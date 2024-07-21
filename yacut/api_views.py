@@ -1,9 +1,11 @@
+from http import HTTPStatus
 from string import ascii_letters, digits
 
 from flask import jsonify, request
 from validators import url
 
 from . import app, db
+from .constants import MIN_SHORT_LENGTH, MAX_SHORT_LENGTH
 from .errors_handlers import InvalidAPIUsage, UniquenessError
 from .models import URLMap
 from .utils import get_unique_short_id
@@ -25,7 +27,7 @@ def create_short_id():
                 "Предложенный вариант короткой ссылки уже существует."
             )
         if not (
-            1 <= len(data["custom_id"]) <= 16
+            MIN_SHORT_LENGTH <= len(data["custom_id"]) <= MAX_SHORT_LENGTH
             and all(
                 char in ascii_letters + digits for char in data["custom_id"]
             )
@@ -37,16 +39,19 @@ def create_short_id():
         try:
             data["custom_id"] = get_unique_short_id()
         except UniquenessError:
-            raise InvalidAPIUsage("Ошибка со стороны сервера", 500)
+            raise InvalidAPIUsage(
+                "Ошибка со стороны сервера",
+                HTTPStatus.INTERNAL_SERVER_ERROR
+            )
 
     url_map = URLMap(original=data["url"], short=data["custom_id"])
     db.session.add(url_map)
     db.session.commit()
-    return jsonify(url_map.to_dict()), 201
+    return jsonify(url_map.to_dict()), HTTPStatus.CREATED
 
 
 @app.route("/api/id/<string:short_id>/", methods=["GET"])
 def get_original_link(short_id):
     if not (url_map := URLMap.query.filter_by(short=short_id).first()):
-        raise InvalidAPIUsage("Указанный id не найден", 404)
-    return jsonify({"url": url_map.original}), 200
+        raise InvalidAPIUsage("Указанный id не найден", HTTPStatus.NOT_FOUND)
+    return jsonify({"url": url_map.original}), HTTPStatus.OK
